@@ -1,80 +1,95 @@
 body {
-    text-align: center;
-    background: #26262b;
-    color: #fff;
-    font-size: 150%;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: bold;
+    background: #252a31;
+    margin: 0;
     padding: 20px;
-    line-height: 1.8em;
-}
-
-.title {
-    font-family: 'Inconsolata', monospace;
-    font-size: 300%;
-    font-weight: bold;
-    margin-top: 20px;
-}
-
-.title a {
-    color: #fff;
-    text-decoration: none;
-}
-
-.cta-container {
-    margin: auto auto 20px;
-}
-
-.cta-container p {
-    margin: 10px auto;
-}
-
-.input-field {
-    background: #36393f;
-    border: none;
-    border-bottom:4px solid #1d1d20;
-    color: #fff;
-    font-size: 100%;
-    font-weight: bold;
-    padding: 10px 20px;
-    border-radius: 3px;
-    max-width: 100%;
-    box-sizing: border-box;
     text-align: center;
+    font-family: monospace;
+    color: #fafafa;
+    font-size: 18px;
 }
 
-.cta-btn {
-    background: #7289da;
-    border: none;
-    padding: 15px 100px;
-    font-size: 90%;
-    color: #d2d2d2;
-    border-radius: 3px;
-    cursor: pointer;
-    font-weight: bold;
-    max-width: 100%;
-    box-sizing: border-box;
-    display: block;
+main {
+    max-width: 480px;
     margin: auto;
 }
 
-.msg {
-    margin: auto auto 20px;
-    padding: 10px 30px;
-    background: #36393f;
-    border-radius: 3px;
-    font-size: 80%;
-    display: inline-block;
-    width: auto;
+h2 {
+    font-size: 26px;
 }
 
-.msg.link-msg {
-    font-family: 'Inconsolata', monospace;
-    font-size: 100%;
+.error-page code {
+    font-size: 14px;
+    display: block;
+    margin-top: 50px;
+}
+
+.title {
+    margin: 20px auto 50px auto;
+    font-size: 36px;
+}
+
+.title a, .title a:hover, .title a:active {
+    color: #fafafa;
+    text-decoration: none;
+}
+
+a {
+    color: #838d9f;
+    text-decoration: none;
+}
+
+a:hover, a:active {
+    color: #8ca9dd;
+}
+
+footer {
+    margin-top: 30px;
+    font-size: 12px;
+    color: #a0a0a0;
+}
+
+#url {
+    width: 80%;
+}
+
+.input-field {
+    background: none;
+    border: none;
+    border-bottom: 3px dashed #161b22;
+    padding: 12px 20px;
+    text-align: center;
+    font-size: 18px;
+    color: #fafafa;
+    font-family: monospace;
+    box-sizing: border-box;
+    display: block;
+    margin: 20px auto;
+}
+
+.cta-btn {
+    background: #4e5a6a;
+    padding: 15px 80px;
+    border: none;
+    display: block;
+    margin: 50px auto;
+    font-size: 18px;
+    font-family: monospace;
+    cursor: pointer;
+    color: #fafafa;
+    border-radius: 3px;
+}
+
+.msg {
+    display: inline-block;
+    background: #31363e;
+    padding: 15px 30px;
+    border-radius: 3px;
+    font-size: 16px;
+    margin: 0 auto 20px auto;
 }
 
 .error-msg {
-    color: #f04747;
+    color: #ff7575;
 }
 
 #short-link {
@@ -82,7 +97,15 @@ body {
     top: -1000000px;
 }
 
-a {
-    color: #7289da;
-    text-decoration: none;
+.explanation {
+    font-size: 14px;
+    margin-top: 80px;
+    color: #a0a0a0;
+    line-height: 1.6;
+}
+
+.code {
+    background: #31363e;
+    padding: 3px 6px;
+    border-radius: 3px;
 }

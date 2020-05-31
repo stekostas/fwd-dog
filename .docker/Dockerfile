@@ -12,5 +12,8 @@ WORKDIR /app
 # Copy source over
 COPY --chown=app:app . .
 
+# Change ownership of the working directory
+RUN chown -R app:app /app
+
 # Switch to the app user
 USER app

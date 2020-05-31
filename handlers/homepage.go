@@ -16,9 +16,10 @@ type HomepageHandler struct {
 }
 
 type TemplateContext struct {
-	Success bool
-	Message string
-	Link    string
+	Success    bool
+	Message    string
+	Link       string
+	TtlOptions map[time.Duration]string
 }
 
 func NewHomepageHandler(context *Context) http.Handler {
@@ -33,7 +34,7 @@ func (h *HomepageHandler) ServeHTTP(writer http.ResponseWriter, request *http.Re
 		return
 	}
 
-	h.Context.Renderer.RenderTemplate(templateName, nil, writer)
+	h.Context.Renderer.RenderTemplate(templateName, &TemplateContext{TtlOptions: h.Context.TtlOptions}, writer)
 }
 
 func (h *HomepageHandler) handleFormSubmission(writer http.ResponseWriter, request *http.Request, templateName string) {
@@ -64,7 +65,7 @@ func (h *HomepageHandler) isValidUrl(writer http.ResponseWriter, targetUrl strin
 func (h *HomepageHandler) isValidTtl(writer http.ResponseWriter, ttl string, templateName string) bool {
 	ttlInt, _ := strconv.Atoi(ttl)
 
-	for _, duration := range h.Context.TtlOptions {
+	for duration := range h.Context.TtlOptions {
 		if time.Second*time.Duration(ttlInt) == duration {
 			return true
 		}
@@ -100,7 +101,7 @@ func (h *HomepageHandler) generateKey(writer http.ResponseWriter, request *http.
 		length++
 	}
 
-	final := fmt.Sprintf("%s/%s", request.Host, key)
+	final := fmt.Sprintf("https://%s/%s", request.Host, key)
 
 	writer.Header().Add("X-Fwd-Key", key)
 	h.Context.Renderer.RenderTemplate(templateName, &TemplateContext{Success: true, Link: final}, writer)

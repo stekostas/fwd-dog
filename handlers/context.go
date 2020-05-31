@@ -8,9 +8,9 @@ import (
 type Context struct {
 	Renderer     *Renderer
 	CacheAdapter cache.Adapter
-	TtlOptions   []time.Duration
+	TtlOptions   map[time.Duration]string
 }
 
-func NewContext(renderer *Renderer, adapter cache.Adapter, ttlOptions []time.Duration) *Context {
+func NewContext(renderer *Renderer, adapter cache.Adapter, ttlOptions map[time.Duration]string) *Context {
 	return &Context{Renderer: renderer, CacheAdapter: adapter, TtlOptions: ttlOptions}
 }

@@ -19,12 +19,15 @@ var (
 	ServerHost   = os.Getenv("APP_HOST")
 	DefaultTtl   = time.Minute * 5
 	RedisAddress = os.Getenv("REDIS_ADDRESS")
-	TtlOptions   = []time.Duration{
-		time.Minute * 5,
-		time.Minute * 30,
-		time.Hour,
-		time.Hour * 12,
-		time.Hour * 24,
+	TtlOptions   = map[time.Duration]string{
+		time.Minute * 5:  "5 minutes",
+		time.Minute * 15: "15 minutes",
+		time.Minute * 30: "30 minutes",
+		time.Hour:        "1 hour",
+		time.Hour * 3:    "3 hours",
+		time.Hour * 6:    "6 hours",
+		time.Hour * 12:   "12 hours",
+		time.Hour * 24:   "1 day",
 	}
 )
 

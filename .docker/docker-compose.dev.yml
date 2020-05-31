@@ -1,0 +1,19 @@
+version: '3'
+services:
+    app:
+        volumes:
+            - '../:/app'
+        entrypoint: "tail -f /dev/null"
+        command: ""
+
+    redis_commander:
+        image: rediscommander/redis-commander:latest
+        restart: always
+        environment:
+            - REDIS_HOSTS=local:redis:6379
+        ports:
+            - '8081:8081'
+        logging:
+            driver: "none"
+        networks:
+            - 'fwd_dog'

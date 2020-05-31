@@ -1,0 +1,29 @@
+version: '3'
+services:
+    app:
+        labels:
+            app: 'fwd-dog'
+        build:
+            context: ../
+            dockerfile: '.docker/Dockerfile'
+        entrypoint: ['sh', '.docker/scripts/docker-entrypoint.sh']
+        environment:
+            APP_HOST: ":3000"
+            REDIS_ADDRESS: "redis:6379"
+        depends_on:
+            - redis
+        ports:
+            - '3000:3000'
+        networks:
+            - fwd_dog
+    redis:
+        image: 'redis:6'
+        ports:
+            - '6379'
+        logging:
+            driver: "none"
+        networks:
+            - 'fwd_dog'
+networks:
+    fwd_dog:
+        driver: bridge

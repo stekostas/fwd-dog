@@ -1,2 +1,3 @@
-# fwd-dog
+# fwd.dog
+
 An ephemeral short link generator.

@@ -1,0 +1,10 @@
+/.docker/
+!/.docker/scripts/
+/.git/
+/.github/
+/.idea/
+/.dockerignore
+/.gitignore
+/coverage.*
+/LICENSE
+/README.md

@@ -1,0 +1,38 @@
+# Build the project in a separate stage
+FROM golang:1.14-buster AS builder
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the source over
+COPY . .
+
+# Build the project
+RUN make build
+
+# Start the container from a fresh image
+FROM debian:buster
+
+# Set necessary environment variables
+ENV APP_HOST ":3000"
+ENV REDIS_ADDRESS "redis:6379"
+ENV DEBIAN_FRONTEND "noninteractive"
+
+# Set the working directoy
+WORKDIR /app
+
+# Add application user
+RUN useradd -rm -s /bin/bash app
+
+# Copy the binary and static assets over from the `builder` stage
+COPY --from=builder /app/fwd-dog .
+COPY --from=builder /app/public ./public
+
+# Change ownership of the working directory
+RUN chown -R app:app /app
+
+# Switch to the app user
+USER app
+
+# Set the entrypoint to run the app
+ENTRYPOINT [ "./fwd-dog" ]

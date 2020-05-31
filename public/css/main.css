@@ -3,9 +3,9 @@ body {
     margin: 0;
     padding: 20px;
     text-align: center;
-    font-family: monospace;
+    font-family: 'Ubuntu Mono', monospace;
     color: #fafafa;
-    font-size: 16px;
+    font-size: 18px;
     line-height: 1.5;
 }
 
@@ -24,7 +24,7 @@ main {
 }
 
 h2 {
-    font-size: 26px;
+    font-size: 30px;
 }
 
 .error-page code {
@@ -38,7 +38,7 @@ header {
 }
 
 .title {
-    font-size: 36px;
+    font-size: 40px;
     margin-bottom: 0;
 }
 
@@ -62,7 +62,7 @@ a:hover, a:active {
 
 footer {
     margin-top: 30px;
-    font-size: 12px;
+    font-size: 14px;
     color: #a0a0a0;
 }
 
@@ -70,7 +70,7 @@ footer {
     cursor: pointer;
     display: block;
     margin: 10px 0;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .choice-label input {
@@ -169,7 +169,7 @@ abbr {
 }
 
 .help-text {
-    font-size: 12px;
+    font-size: 14px;
     color: #a0a0a0;
     margin-top: 5px;
 }

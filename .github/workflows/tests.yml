@@ -29,5 +29,5 @@ jobs:
         -   name: Run the automated tests with coverage report
             env:
                 APP_HOST: ":3000"
-                REDIS_ADDRESS: "localhost:6379"
+                REDIS_ADDRESS: redis:${{ job.services.redis.ports[6379] }}
             run: make cover-all

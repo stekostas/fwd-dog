@@ -1,18 +1,18 @@
 package handlers
 
 import (
-	"crypto/sha256"
-	"encoding/base64"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/stekostas/fwd-dog/models"
+	"github.com/stekostas/fwd-dog/services"
 	"net/http"
 	"net/url"
-	"regexp"
-	"strconv"
 	"time"
 )
 
 type HomepageHandler struct {
-	Context *Context
+	TtlOptions    map[time.Duration]string
+	LinkGenerator *services.LinkGenerator
 }
 
 type TemplateContext struct {
@@ -22,101 +22,74 @@ type TemplateContext struct {
 	TtlOptions map[time.Duration]string
 }
 
-func NewHomepageHandler(context *Context) http.Handler {
-	return &HomepageHandler{Context: context}
+func NewHomepageHandler(ttlOptions map[time.Duration]string, linkGenerator *services.LinkGenerator) *HomepageHandler {
+	return &HomepageHandler{
+		TtlOptions:    ttlOptions,
+		LinkGenerator: linkGenerator,
+	}
 }
 
-func (h *HomepageHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	templateName := "index.html"
+func (h *HomepageHandler) Get(c *gin.Context) {
+	c.HTML(http.StatusOK, "index.gohtml", &TemplateContext{
+		TtlOptions: h.TtlOptions,
+	})
+}
 
-	if request.Method == http.MethodPost {
-		h.handleFormSubmission(writer, request, templateName)
+func (h *HomepageHandler) Post(c *gin.Context) {
+	form := &models.CreateLinkForm{}
+	template := "index.gohtml"
+
+	err := c.ShouldBind(form)
+	data, valErr := h.ValidateCreateLinkForm(form)
+
+	if err != nil || valErr != nil {
+		c.HTML(http.StatusBadRequest, template, &TemplateContext{
+			Success:    false,
+			Message:    "Invalid form data.",
+			TtlOptions: h.TtlOptions,
+		})
 		return
 	}
 
-	h.Context.Renderer.RenderTemplate(templateName, &TemplateContext{TtlOptions: h.Context.TtlOptions}, writer)
-}
+	key, genErr := h.LinkGenerator.Generate(data)
 
-func (h *HomepageHandler) handleFormSubmission(writer http.ResponseWriter, request *http.Request, templateName string) {
-	targetUrl := request.FormValue("url")
-	ttl := request.FormValue("ttl")
-	validUrl := h.isValidUrl(writer, targetUrl, templateName)
-	validTtl := h.isValidTtl(writer, ttl, templateName)
-
-	if !validUrl || !validTtl {
-		return
+	if genErr != nil {
+		panic(genErr)
 	}
 
-	h.generateKey(writer, request, targetUrl, ttl, templateName)
+	c.Header("X-Fwd-Key", key)
+
+	c.HTML(http.StatusCreated, template, &TemplateContext{
+		Success: true,
+		Link:    "https://" + c.Request.Host + "/" + key,
+	})
 }
 
-func (h *HomepageHandler) isValidUrl(writer http.ResponseWriter, targetUrl string, templateName string) bool {
-	_, err := url.ParseRequestURI(targetUrl)
-
-	if err == nil {
-		return true
+func (h *HomepageHandler) ValidateCreateLinkForm(f *models.CreateLinkForm) (*models.CreateLink, error) {
+	const checkboxTrueValue = "on"
+	data := &models.CreateLink{
+		TargetUrl: f.TargetUrl,
+		Ttl:       time.Second * time.Duration(f.Ttl),
 	}
 
-	writer.WriteHeader(400)
-	h.Context.Renderer.RenderTemplate(templateName, &TemplateContext{Success: false, Message: "Please enter a valid URL."}, writer)
-	return false
-}
+	_, err := url.ParseRequestURI(data.TargetUrl)
 
-func (h *HomepageHandler) isValidTtl(writer http.ResponseWriter, ttl string, templateName string) bool {
-	ttlInt, _ := strconv.Atoi(ttl)
-
-	for duration := range h.Context.TtlOptions {
-		if time.Second*time.Duration(ttlInt) == duration {
-			return true
-		}
+	if err != nil {
+		return nil, fmt.Errorf("the URL provided '%s' is not valid", data.TargetUrl)
 	}
 
-	writer.WriteHeader(400)
-	h.Context.Renderer.RenderTemplate(templateName, &TemplateContext{Success: false, Message: "Please select a valid expiration time."}, writer)
-	return false
-}
-
-func (h *HomepageHandler) generateKey(writer http.ResponseWriter, request *http.Request, targetUrl string, ttl string, templateName string) {
-	key := ""
-	length := 1
-	limit := 6
-	ttlInt, _ := strconv.Atoi(ttl)
-	keyHash := h.getKeyHash(targetUrl)
-
-	for {
-		key = keyHash[:length]
-
-		ok, err := h.Context.CacheAdapter.SetOrFail(key, targetUrl, time.Second*time.Duration(ttlInt))
-
-		if ok {
-			break
-		}
-
-		if length >= limit || err != nil {
-			internalServerErrorHandler := NewInternalServerErrorHandler(h.Context)
-			internalServerErrorHandler.ServeHTTP(writer, request)
-			return
-		}
-
-		length++
+	if _, ok := h.TtlOptions[data.Ttl]; !ok {
+		return nil, fmt.Errorf("ttl provided must be one of %v, %v given", h.TtlOptions, data.Ttl)
 	}
 
-	final := fmt.Sprintf("https://%s/%s", request.Host, key)
+	data.SingleUse = f.SingleUse == checkboxTrueValue
+	data.PasswordProtected = f.PasswordProtected == checkboxTrueValue
 
-	writer.Header().Add("X-Fwd-Key", key)
-	h.Context.Renderer.RenderTemplate(templateName, &TemplateContext{Success: true, Link: final}, writer)
-}
+	if data.PasswordProtected && len(f.Password) < 1 {
+		return nil, fmt.Errorf("password is empty but the link was requested to be password protected")
+	}
 
-func (h *HomepageHandler) getKeyHash(targetUrl string) string {
-	unixNano := time.Now().UnixNano()
-	timestamp := strconv.FormatInt(unixNano, 10)
-	key := targetUrl + timestamp
+	data.Password = f.Password
 
-	hasher := sha256.New()
-	hasher.Write([]byte(key))
-	hash := hasher.Sum(nil)
-	encoded := base64.URLEncoding.EncodeToString(hash)
-	pattern := regexp.MustCompile(`[^a-zA-Z0-9]`)
-
-	return pattern.ReplaceAllString(encoded, "")
+	return data, nil
 }

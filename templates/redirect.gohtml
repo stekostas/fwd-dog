@@ -1,0 +1,33 @@
+{{ define "redirect.gohtml" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ template "meta" }}
+    {{ template "head" }}
+</head>
+<body>
+{{ template "header"}}
+<main>
+    {{if .Message}}
+    <span class="msg error-msg">{{.Message}}</span>
+    {{end}}
+    <label class="msg warning-msg" for="password"><strong>Warning:</strong> The link is password protected. Please enter the password below to unlock it.</label>
+    <form method="post">
+        <div class="cta-container">
+            <input type="password" name="password" id="password" class="input-field" placeholder="hunter2" minlength="1" maxlength="64" autofocus required>
+        </div>
+        <button type="submit" class="cta-btn">
+            <span class="btn-text">UNLOCK</span>
+            <span class="spinner hidden">
+                <span class="bounce1"></span>
+                <span class="bounce2"></span>
+                <span class="bounce3"></span>
+            </span>
+        </button>
+    </form>
+    <script src="/assets/js/form.js"></script>
+</main>
+{{ template "footer"}}
+</body>
+</html>
+{{ end }}

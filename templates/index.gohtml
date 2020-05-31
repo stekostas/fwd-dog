@@ -1,0 +1,64 @@
+{{ define "index.gohtml" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ template "meta" }}
+    {{ template "head" }}
+</head>
+<body>
+{{ template "header"}}
+<main>
+    {{if .Success}}
+        <div class="center-text">
+            <p>Here's your short link:</p>
+            <span class="msg link-msg">{{.Link}}</span>
+            <input type="text" id="short-link" value="{{.Link}}">
+            <button id="copy-btn" class="cta-btn" onclick="copyLink()">COPY</button>
+        </div>
+        <script src="/assets/js/copy-link.js"></script>
+    {{else}}
+    {{if .Message}}
+    <span class="msg error-msg">{{.Message}}</span>
+    {{end}}
+    <form action="/" method="post">
+        <div class="cta-container">
+            <label for="targetUrl">Target URL:</label>
+            <p class="help-text">The URL that the link will point to.</p>
+            <input type="url" name="targetUrl" id="targetUrl" class="input-field" placeholder="https://foo.bar/baz" autofocus required maxlength="2048">
+            <label for="ttl">Expires After:</label>
+            <p class="help-text">The duration of the generated links's life.</p>
+            <select name="ttl" id="ttl" class="input-field" required>
+                {{range $ttl, $val := .TtlOptions}}
+                    <option value="{{$ttl.Seconds}}">{{$val}}</option>
+                {{end}}
+            </select>
+            <label for="single-use" class="choice-label">
+                <input type="checkbox" name="single-use" id="single-use">
+                Recycle the link after one use <abbr title="The link will be available only once during its existence.">&#9432;</abbr>
+            </label>
+            <label for="password-protected" class="choice-label">
+                <input type="checkbox" name="password-protected" id="password-protected" onchange="togglePasswordContainer();">
+                Protect the link with a password <abbr title="You will need to provide a password to use the link.">&#9432;</abbr>
+            </label>
+            <div id="password-container" class="password-container hidden">
+                <label for="password">Password:</label>
+                <p class="help-text">The password required to use the link.</p>
+                <input type="password" name="password" id="password" class="input-field" placeholder="hunter2" minlength="1" maxlength="64">
+            </div>
+        </div>
+        <button type="submit" class="cta-btn">
+            <span class="btn-text">GO</span>
+            <span class="spinner hidden">
+                <span class="bounce1"></span>
+                <span class="bounce2"></span>
+                <span class="bounce3"></span>
+            </span>
+        </button>
+    </form>
+    <script src="/assets/js/form.js"></script>
+    {{end}}
+</main>
+{{ template "footer"}}
+</body>
+</html>
+{{ end }}

@@ -1,0 +1,25 @@
+{{ define "credits.gohtml" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ template "meta" }}
+    {{ template "head" }}
+</head>
+<body>
+{{ template "header"}}
+<main class="explanation">
+    <section>
+        <p>fwd.dog is built using the following awesome software:</p>
+        <ul class="left-text">
+            <li>gin-gonic/gin &mdash; <i>MIT Licence</i> &mdash; <a href="https://github.com/gin-gonic/gin" target="_blank">GitHub</a>, <a href="https://gin-gonic.com/" target="_blank">Website</a></li>
+            <li>go-redis/redis &mdash; <i>BSD 2-Clause</i> &mdash; <a href="https://github.com/go-redis/redis" target="_blank">GitHub</a></li>
+            <li>ekyoung/gin-nice-recovery &mdash; <i>MIT Licence</i> &mdash; <a href="https://github.com/ekyoung/gin-nice-recovery" target="_blank">GitHub</a></li>
+            <li>stretchr/testify &mdash; <i>MIT Licence</i> &mdash; <a href="https://github.com/stretchr/testify" target="_blank">GitHub</a></li>
+            <li>tobiasahlin/SpinKit &mdash; <i>MIT Licence</i> &mdash; <a href="https://github.com/tobiasahlin/SpinKit" target="_blank">GitHub</a>, <a href="https://tobiasahlin.com/spinkit/" target="_blank">Website</a></li>
+        </ul>
+    </section>
+</main>
+{{ template "footer"}}
+</body>
+</html>
+{{ end }}

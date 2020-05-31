@@ -1,0 +1,23 @@
+{{ define "about.gohtml" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ template "meta" }}
+    {{ template "head" }}
+</head>
+<body>
+{{ template "header"}}
+<main class="explanation">
+    <section>
+        <p>fwd.dog is an ephemeral short link generator. You provide a target URL, set an expiration time, select whether the link should be single use and/or password protected, and you get a short link. The system stores <i>only</i> the provided target URL bound to the generated link. No accounts, no tracking, entirely anonymous.</p>
+        <p>The system can hold up to 113,600,471,168 unique links at any given time using all possible options (single use, password protection). The generated link hash - something like <code class="code">xY0z4</code> - consists of 1 to 6 alphanumeric characters plus an optional <code class="code">.</code> prefix when the link is marked as single use, and is recycled after expiration.</p>
+        <p>When a link is recycled, it means that it can be re-assigned to a different target URL. That means that if, for example, you shared your generated link with a friend and until they follow it, the link has expired and was re-assigned to a new target URL, when your friend decides to click on it, they will be redirected to the new URL.</p>
+        <p>The main purpose of the service is to provide a very short link to your target URL so it can be quickly typed by hand or even memorised for easy transfer across disconnected devices. The generated links are publicly accessible for the duration of their existence and are not meant to be used as permalinks to their target URLs.</p>
+        <p>You are able to protect your links with a password that you define. When the password protected link is used, you will be prompted for the password. Unless you provide the correct password, the link is useless.</p>
+        <p><small>Disclaimer: Do not use the service to generate links that expose pages which may hold sensitive information. The password protected links are not meant to provide a secure gateway for the target URL. Additionally, the service holds the right to remove any links at any moment. No guarantees or service level agreements (SLAs) are being offered.</small></p>
+    </section>
+</main>
+{{ template "footer"}}
+</body>
+</html>
+{{ end }}

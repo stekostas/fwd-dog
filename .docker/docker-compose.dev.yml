@@ -1,0 +1,6 @@
+version: '3'
+services:
+    app:
+        volumes:
+            - '../:/app'
+        command: [ "echo [SUCCESS] \"The container is ready. Run 'make enter' to enter it and start up the server...\" && tail -f /dev/null" ]

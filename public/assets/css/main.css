@@ -1,0 +1,88 @@
+body {
+    text-align: center;
+    background: #26262b;
+    color: #fff;
+    font-size: 150%;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: bold;
+    padding: 20px;
+    line-height: 1.8em;
+}
+
+.title {
+    font-family: 'Inconsolata', monospace;
+    font-size: 300%;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.title a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.cta-container {
+    margin: auto auto 20px;
+}
+
+.cta-container p {
+    margin: 10px auto;
+}
+
+.input-field {
+    background: #36393f;
+    border: none;
+    border-bottom:4px solid #1d1d20;
+    color: #fff;
+    font-size: 100%;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 3px;
+    max-width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.cta-btn {
+    background: #7289da;
+    border: none;
+    padding: 15px 100px;
+    font-size: 90%;
+    color: #d2d2d2;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: bold;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: block;
+    margin: auto;
+}
+
+.msg {
+    margin: auto auto 20px;
+    padding: 10px 30px;
+    background: #36393f;
+    border-radius: 3px;
+    font-size: 80%;
+    display: inline-block;
+    width: auto;
+}
+
+.msg.link-msg {
+    font-family: 'Inconsolata', monospace;
+    font-size: 100%;
+}
+
+.error-msg {
+    color: #f04747;
+}
+
+#short-link {
+    position: absolute;
+    top: -1000000px;
+}
+
+a {
+    color: #7289da;
+    text-decoration: none;
+}

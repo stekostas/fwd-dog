@@ -1,0 +1,40 @@
+# Build the project in a separate stage
+FROM golang:1.14-alpine3.11 AS builder
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the source over
+COPY . .
+
+# Install make
+RUN apk add --no-cache make
+
+# Build the project
+RUN make build
+
+# Start the container from a fresh image
+FROM alpine:3.11
+
+# Set necessary environment variables
+ENV APP_HOST ":3000"
+ENV REDIS_ADDRESS "redis:6379"
+
+# Set the working directoy
+WORKDIR /app
+
+# Add application user
+RUN addgroup -S app && adduser -S app -G app
+
+# Copy the binary and static assets over from the `builder` stage
+COPY --from=builder /app/fwd-dog .
+COPY --from=builder /app/public ./public
+
+# Change ownership of the working directory
+RUN chown -R app:app /app
+
+# Switch to the app user
+USER app
+
+# Set the entrypoint to run the app
+ENTRYPOINT [ "./fwd-dog" ]

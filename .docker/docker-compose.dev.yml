@@ -3,17 +3,4 @@ services:
     app:
         volumes:
             - '../:/app'
-        entrypoint: "tail -f /dev/null"
-        command: ""
-
-    redis_commander:
-        image: rediscommander/redis-commander:latest
-        restart: always
-        environment:
-            - REDIS_HOSTS=local:redis:6379
-        ports:
-            - '8081:8081'
-        logging:
-            driver: "none"
-        networks:
-            - 'fwd_dog'
+        command: [ "echo [SUCCESS] \"The container is ready. Run 'make enter' to enter it and start up the server...\" && tail -f /dev/null" ]

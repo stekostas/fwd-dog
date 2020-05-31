@@ -21,7 +21,7 @@ cover:
 # Starts up the development environment
 .PHONY: dev
 dev:
-	-@docker-compose -f .docker/docker-compose.yml -f .docker/docker-compose.dev.yml up --build --abort-on-container-exit --renew-anon-volumes --remove-orphans
+	@docker-compose -f .docker/docker-compose.yml -f .docker/docker-compose.dev.yml up --build --abort-on-container-exit --renew-anon-volumes --remove-orphans
 
 # Executes 'bash' on the 'app' container
 .PHONY: enter
@@ -36,3 +36,8 @@ enter:
 isolated-test:
 	# Running the tests
 	@docker-compose -f .docker/docker-compose.yml -f .docker/docker-compose.test.yml up --build --abort-on-container-exit --renew-anon-volumes --remove-orphans
+
+# Starts up a production environment
+.PHONY: isolated-run
+isolated-run:
+	@docker-compose -f .docker/docker-compose.yml -f .docker/docker-compose.prod.yml up --build --abort-on-container-exit --renew-anon-volumes --remove-orphans

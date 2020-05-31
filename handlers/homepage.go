@@ -6,6 +6,7 @@ import (
 	"github.com/stekostas/fwd-dog/models"
 	"github.com/stekostas/fwd-dog/services"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -69,6 +70,12 @@ func (h *HomepageHandler) ValidateCreateLinkForm(f *models.CreateLinkForm) (*mod
 	data := &models.CreateLink{
 		TargetUrl: f.TargetUrl,
 		Ttl:       time.Second * time.Duration(f.Ttl),
+	}
+
+	_, err := url.ParseRequestURI(data.TargetUrl)
+
+	if err != nil {
+		return nil, fmt.Errorf("the URL provided '%s' is not valid", data.TargetUrl)
 	}
 
 	if _, ok := h.TtlOptions[data.Ttl]; !ok {

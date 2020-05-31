@@ -70,6 +70,28 @@ func (s *MainTestSuite) TestGenerateLinkNoOptions() {
 	s.Equal(http.StatusOK, res.StatusCode)
 }
 
+func (s *MainTestSuite) TestGenerateLinkInvalidUrl() {
+	data := url.Values{}
+	data.Add("targetUrl", "invalid")
+	data.Add("ttl", "300")
+
+	res, err := http.Post(AppUrl+"/", "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+
+	s.Nil(err)
+	s.Equal(http.StatusBadRequest, res.StatusCode)
+}
+
+func (s *MainTestSuite) TestGenerateLinkInvalidTtl() {
+	data := url.Values{}
+	data.Add("targetUrl", AppUrl)
+	data.Add("ttl", "99999999999999")
+
+	res, err := http.Post(AppUrl+"/", "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+
+	s.Nil(err)
+	s.Equal(http.StatusBadRequest, res.StatusCode)
+}
+
 func (s *MainTestSuite) TestGenerateLinkSingleUse() {
 	data := url.Values{}
 	data.Add("targetUrl", AppUrl)

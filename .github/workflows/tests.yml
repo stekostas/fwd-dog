@@ -7,27 +7,11 @@ on:
         - '**'
 jobs:
     run:
-        name: Run Tests on ${{ matrix.operating-system }} with Go ${{ matrix.go-version }}
-        services:
-            redis:
-                image: redis:6
-                ports:
-                - '6379:6379'
-        strategy:
-            matrix:
-                operating-system: ['ubuntu-18.04']
-                go-version: ['1.14']
-        runs-on: ${{ matrix.operating-system }}
+        name: Run Isolated Tests
+        runs-on: 'ubuntu-18.04'
         steps:
-        -   name: Set up Go ${{ matrix.go-version }}
-            uses: actions/setup-go@v2
-            with:
-                go-version: ${{ matrix.go-version }}
         -   name: Checkout source
             uses: actions/checkout@v2
 
         -   name: Run the automated tests with coverage report
-            env:
-                APP_HOST: ":3000"
-                REDIS_ADDRESS: redis:${{ job.services.redis.ports[6379] }}
-            run: make cover-all
+            run: make isolated-test

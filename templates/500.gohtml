@@ -1,8 +1,9 @@
+{{ define "500.gohtml" }}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>HTTP 500 Internal Server Error</title>
-    <link rel="stylesheet" href="assets/css/main.css">
+    {{ template "meta" }}
+    {{ template "head" }}
 </head>
 <body class="error-page">
     <h2>Oops... Something went wrong.</h2>
@@ -10,3 +11,4 @@
     <p><code>HTTP 500 Internal Server Error</code></p>
 </body>
 </html>
+{{ end }}

@@ -1,150 +1,231 @@
+// +build integration_tests
+
 package main
 
 import (
-	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/stekostas/fwd-dog/cache"
-	"github.com/stekostas/fwd-dog/handlers"
+	"github.com/go-redis/redis/v7"
+	"github.com/stretchr/testify/suite"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
 )
 
-func TestHomepageHandler(t *testing.T) {
-	req, err := http.NewRequest("GET", "/", nil)
+const AppUrl = "http://localhost:3000"
 
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-	cacheAdapter := cache.NewRedisAdapter(RedisAddress, DefaultTtl)
-	renderer := handlers.NewRenderer(StaticFilesRoot, AssetsRoot)
-	context := handlers.NewContext(renderer, cacheAdapter, TtlOptions)
-	handler := handlers.NewHomepageHandler(context)
-
-	handler.ServeHTTP(rr, req)
-
-	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
+type MainTestSuite struct {
+	suite.Suite
+	redisClient *redis.Client
 }
 
-func TestHomepageFailedSubmission(t *testing.T) {
-	req, err := http.NewRequest("POST", "/", nil)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-	cacheAdapter := cache.NewRedisAdapter(RedisAddress, DefaultTtl)
-	renderer := handlers.NewRenderer(StaticFilesRoot, AssetsRoot)
-	context := handlers.NewContext(renderer, cacheAdapter, TtlOptions)
-	handler := handlers.NewHomepageHandler(context)
-
-	handler.ServeHTTP(rr, req)
-
-	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusBadRequest {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
-	}
+func TestMainSuite(t *testing.T) {
+	s := new(MainTestSuite)
+	s.redisClient = redis.NewClient(&redis.Options{Addr: RedisHost})
+	go main()
+	defer s.redisClient.FlushAll()
+	suite.Run(t, s)
 }
 
-func TestHomepageSuccessfulSubmission(t *testing.T) {
+func (s *MainTestSuite) SetupTest() {
+	s.redisClient.FlushAll()
+}
+
+func (s *MainTestSuite) TestServer() {
+	res, err := http.Get(AppUrl + "/")
+
+	s.Nil(err)
+	s.Equal(http.StatusOK, res.StatusCode)
+}
+
+func (s *MainTestSuite) TestNotFoundKey() {
+	res, err := http.Get(AppUrl + "/missing")
+
+	s.Nil(err)
+	s.Equal(http.StatusNotFound, res.StatusCode)
+}
+
+func (s *MainTestSuite) TestNotFoundPage() {
+	res, err := http.Get(AppUrl + "/_missing")
+
+	s.Nil(err)
+	s.Equal(http.StatusNotFound, res.StatusCode)
+}
+
+func (s *MainTestSuite) TestGenerateLinkNoOptions() {
 	data := url.Values{}
-	data.Add("url", "https://github.com")
+	data.Add("targetUrl", AppUrl)
 	data.Add("ttl", "300")
-	req, err := http.NewRequest("POST", "/", strings.NewReader(data.Encode()))
 
-	if err != nil {
-		t.Fatal(err)
-	}
+	res, err := http.Post(AppUrl+"/", "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
 
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	rr := httptest.NewRecorder()
-	cacheAdapter := cache.NewRedisAdapter(RedisAddress, DefaultTtl)
-	renderer := handlers.NewRenderer(StaticFilesRoot, AssetsRoot)
-	context := handlers.NewContext(renderer, cacheAdapter, TtlOptions)
-	handler := handlers.NewHomepageHandler(context)
+	s.Nil(err)
+	s.Equal(http.StatusCreated, res.StatusCode)
 
-	handler.ServeHTTP(rr, req)
+	key := res.Header.Get("X-Fwd-Key")
+	s.NotEmpty(key)
 
-	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
+	res, err = http.Get(AppUrl + "/" + key)
+
+	s.Nil(err)
+	s.Equal(http.StatusOK, res.StatusCode)
 }
 
-func TestMissingLink(t *testing.T) {
-	req, err := http.NewRequest("GET", "/test", nil)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-	cacheAdapter := cache.NewRedisAdapter(RedisAddress, DefaultTtl)
-	renderer := handlers.NewRenderer(StaticFilesRoot, AssetsRoot)
-	context := handlers.NewContext(renderer, cacheAdapter, TtlOptions)
-	handler := handlers.NewLinkRedirectHandler(context)
-
-	handler.ServeHTTP(rr, req)
-
-	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusNotFound {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusNotFound)
-	}
-}
-
-func TestCorrectLink(t *testing.T) {
-	// Generate key
+func (s *MainTestSuite) TestGenerateLinkSingleUse() {
 	data := url.Values{}
-	data.Add("url", "https://github.com")
+	data.Add("targetUrl", AppUrl)
 	data.Add("ttl", "300")
-	req, err := http.NewRequest("POST", "/", strings.NewReader(data.Encode()))
+	data.Add("single-use", "on")
 
-	if err != nil {
-		t.Fatal(err)
-	}
+	res, err := http.Post(AppUrl+"/", "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
 
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	rr := httptest.NewRecorder()
-	cacheAdapter := cache.NewRedisAdapter(RedisAddress, DefaultTtl)
-	renderer := handlers.NewRenderer(StaticFilesRoot, AssetsRoot)
-	context := handlers.NewContext(renderer, cacheAdapter, TtlOptions)
-	handler := handlers.NewHomepageHandler(context)
+	s.Nil(err)
+	s.Equal(http.StatusCreated, res.StatusCode)
 
-	handler.ServeHTTP(rr, req)
+	key := res.Header.Get("X-Fwd-Key")
+	s.NotEmpty(key)
+	s.True(strings.HasPrefix(key, "."))
 
-	// Check the status code is what we expect
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
+	res, err = http.Get(AppUrl + "/" + key)
 
-	key := rr.Result().Header.Get("X-Fwd-Key")
+	s.Nil(err)
+	s.Equal(http.StatusOK, res.StatusCode)
 
-	if key == "" {
-		t.Error("handler does not contain a valid key in the 'X-Fwd-Key' header")
-	}
+	res, err = http.Get(AppUrl + "/" + key)
 
-	req2, err2 := http.NewRequest("GET", fmt.Sprintf("/%s", key), nil)
+	s.Nil(err)
+	s.Equal(http.StatusNotFound, res.StatusCode)
+}
 
-	if err2 != nil {
-		t.Fatal(err2)
-	}
+func (s *MainTestSuite) TestGenerateLinkWithPassword() {
+	data := url.Values{}
+	data.Add("targetUrl", AppUrl)
+	data.Add("ttl", "300")
+	data.Add("password-protected", "on")
+	data.Add("password", "hunter2")
 
-	rr2 := httptest.NewRecorder()
-	r := mux.NewRouter()
-	linkHandler := handlers.NewLinkRedirectHandler(context)
-	r.Handle("/{key}", linkHandler)
-	r.ServeHTTP(rr2, req2)
+	res, err := http.Post(AppUrl+"/", "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
 
-	// Check the status code is what we expect
-	if status := rr2.Code; status != http.StatusFound {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusFound)
-	}
+	s.Nil(err)
+	s.Equal(http.StatusCreated, res.StatusCode)
+
+	key := res.Header.Get("X-Fwd-Key")
+	s.NotEmpty(key)
+
+	res, err = http.Get(AppUrl + "/" + key)
+
+	s.Nil(err)
+	s.Equal(http.StatusOK, res.StatusCode)
+
+	data = url.Values{}
+	data.Add("password", "hunter2")
+
+	res, err = http.Post(AppUrl+"/"+key, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+
+	s.Nil(err)
+	s.Equal(http.StatusOK, res.StatusCode)
+}
+
+func (s *MainTestSuite) TestGenerateLinkWithPasswordCannotUnlock() {
+	data := url.Values{}
+	data.Add("targetUrl", AppUrl)
+	data.Add("ttl", "300")
+	data.Add("password-protected", "on")
+	data.Add("password", "hunter2")
+
+	res, err := http.Post(AppUrl+"/", "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+
+	s.Nil(err)
+	s.Equal(http.StatusCreated, res.StatusCode)
+
+	key := res.Header.Get("X-Fwd-Key")
+	s.NotEmpty(key)
+
+	res, err = http.Get(AppUrl + "/" + key)
+
+	s.Nil(err)
+	s.Equal(http.StatusOK, res.StatusCode)
+
+	data = url.Values{}
+	data.Add("password", "wrong")
+
+	res, err = http.Post(AppUrl+"/"+key, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+
+	s.Nil(err)
+	s.Equal(http.StatusUnauthorized, res.StatusCode)
+}
+
+func (s *MainTestSuite) TestGenerateLinkWithPasswordCannotUnlockBadRequest() {
+	data := url.Values{}
+	data.Add("targetUrl", AppUrl)
+	data.Add("ttl", "300")
+	data.Add("password-protected", "on")
+	data.Add("password", "hunter2")
+
+	res, err := http.Post(AppUrl+"/", "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+
+	s.Nil(err)
+	s.Equal(http.StatusCreated, res.StatusCode)
+
+	key := res.Header.Get("X-Fwd-Key")
+	s.NotEmpty(key)
+
+	res, err = http.Get(AppUrl + "/" + key)
+
+	s.Nil(err)
+	s.Equal(http.StatusOK, res.StatusCode)
+
+	data = url.Values{}
+
+	res, err = http.Post(AppUrl+"/"+key, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+
+	s.Nil(err)
+	s.Equal(http.StatusBadRequest, res.StatusCode)
+}
+
+func (s *MainTestSuite) TestGenerateLinkPasswordProtectedNoPassword() {
+	data := url.Values{}
+	data.Add("targetUrl", AppUrl)
+	data.Add("ttl", "300")
+	data.Add("password-protected", "on")
+
+	res, err := http.Post(AppUrl+"/", "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+
+	s.Nil(err)
+	s.Equal(http.StatusBadRequest, res.StatusCode)
+}
+
+func (s *MainTestSuite) TestGenerateLinkAllOptions() {
+	data := url.Values{}
+	data.Add("targetUrl", AppUrl)
+	data.Add("ttl", "300")
+	data.Add("single-use", "on")
+	data.Add("password-protected", "on")
+	data.Add("password", "hunter2")
+
+	res, err := http.Post(AppUrl+"/", "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+
+	s.Nil(err)
+	s.Equal(http.StatusCreated, res.StatusCode)
+
+	key := res.Header.Get("X-Fwd-Key")
+	s.NotEmpty(key)
+	s.True(strings.HasPrefix(key, "."))
+
+	res, err = http.Get(AppUrl + "/" + key)
+
+	s.Nil(err)
+	s.Equal(http.StatusOK, res.StatusCode)
+
+	data = url.Values{}
+	data.Add("password", "hunter2")
+
+	res, err = http.Post(AppUrl+"/"+key, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+
+	s.Nil(err)
+	s.Equal(http.StatusOK, res.StatusCode)
+
+	res, err = http.Get(AppUrl + "/" + key)
+
+	s.Nil(err)
+	s.Equal(http.StatusNotFound, res.StatusCode)
 }

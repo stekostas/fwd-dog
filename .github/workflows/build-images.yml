@@ -1,0 +1,39 @@
+name: Build Docker Images
+on:
+    release:
+        types: [published]
+jobs:
+    build:
+        name: Build Docker Images
+        strategy:
+            matrix:
+                flavour: ['buster', 'alpine']
+        runs-on: ubuntu-18.04
+        steps:
+        -   name: Checkout source
+            uses: actions/checkout@v2
+
+        -   name: Get the release version
+            id: get_version
+            run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\/v/}
+
+        -   name: Build and push images
+            run: |
+                # Set up variables
+                IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/fwd-dog
+                RELEASE_VERSION=${{ steps.get_version.outputs.VERSION }}-${{ matrix.flavour }}
+
+                # Change all uppercase to lowercase (reguired by GitHub)
+                IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+
+                # Login to the GitHub packages registry
+                echo "[INFO] Logging into GPR..."
+                echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+                # Build the image
+                echo "[INFO] Building image..."
+                docker build . -f .docker/build/Dockerfile-${{ matrix.flavour }} -t $IMAGE_ID:$RELEASE_VERSION
+
+                # Push the new image version
+                echo "[INFO] Pushing new image version to GPR..."
+                docker push $IMAGE_ID:$RELEASE_VERSION

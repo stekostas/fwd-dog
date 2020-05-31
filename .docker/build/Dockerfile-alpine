@@ -19,6 +19,7 @@ FROM alpine:3.11
 # Set necessary environment variables
 ENV APP_HOST ":3000"
 ENV REDIS_ADDRESS "redis:6379"
+ENV GIN_MODE "release"
 
 # Set the working directoy
 WORKDIR /app
@@ -29,6 +30,7 @@ RUN addgroup -S app && adduser -S app -G app
 # Copy the binary and static assets over from the `builder` stage
 COPY --from=builder /app/fwd-dog .
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/templates ./templates
 
 # Change ownership of the working directory
 RUN chown -R app:app /app

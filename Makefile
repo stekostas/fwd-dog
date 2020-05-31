@@ -13,10 +13,20 @@ run:
 test:
 	go test ./...
 
+# Runs the project's automated tests including the integration tests
+.PHONY: test-all
+test-all:
+	go test -tags=integration_tests ./...
+
 # Runs the tests in the local environment
 .PHONY: cover
 cover:
 	@go test -coverprofile coverage.out -coverpkg ./... ./... && go tool cover -html=coverage.out -o coverage.html && rm coverage.out
+
+# Runs the tests in the local environment including the integration tests
+.PHONY: cover-all
+cover-all:
+	@go test -coverprofile coverage.out -coverpkg ./... -tags=integration_tests ./... && go tool cover -html=coverage.out -o coverage.html && rm coverage.out
 
 # Starts up the development environment
 .PHONY: dev

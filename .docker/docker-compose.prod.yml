@@ -1,4 +1,6 @@
 version: '3'
 services:
     app:
-        command: [ "make run" ]
+        environment:
+          GIN_MODE: release
+        command: [ "make build && echo \"[`date`][INFO] Starting server...\" && ./fwd-dog" ]

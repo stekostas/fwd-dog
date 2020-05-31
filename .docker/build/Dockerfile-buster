@@ -16,6 +16,7 @@ FROM debian:buster
 # Set necessary environment variables
 ENV APP_HOST ":3000"
 ENV REDIS_ADDRESS "redis:6379"
+ENV GIN_MODE "release"
 ENV DEBIAN_FRONTEND "noninteractive"
 
 # Set the working directoy
@@ -27,6 +28,7 @@ RUN useradd -rm -s /bin/bash app
 # Copy the binary and static assets over from the `builder` stage
 COPY --from=builder /app/fwd-dog .
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/templates ./templates
 
 # Change ownership of the working directory
 RUN chown -R app:app /app

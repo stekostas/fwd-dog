@@ -20,7 +20,7 @@ type MainTestSuite struct {
 
 func TestMainSuite(t *testing.T) {
 	s := new(MainTestSuite)
-	s.redisClient = redis.NewClient(&redis.Options{Addr: RedisHost})
+	s.redisClient = redis.NewClient(&redis.Options{Addr: RedisAddress})
 	go main()
 	defer s.redisClient.FlushAll()
 	suite.Run(t, s)

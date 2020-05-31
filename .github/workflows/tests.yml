@@ -27,4 +27,4 @@ jobs:
             uses: actions/checkout@v2
 
         -   name: Run the automated tests with coverage report
-            run: make cover
+            run: make cover-all

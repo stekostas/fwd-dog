@@ -124,7 +124,17 @@ Additionally, you can run `make test-all` and `make cover-all` to run the tests 
 
 ## Versioning
 
-The project follows the [Semantic Versioning v2](https://semver.org/spec/v2.0.0.html) standard. For the available project versions, check the [releases page](https://github.com/stekostas/fwd-dog/releases). 
+The project follows the [Semantic Versioning v2](https://semver.org/spec/v2.0.0.html) standard. For the available project versions, check the [releases page](https://github.com/stekostas/fwd-dog/releases).
+
+## Credits
+
+fwd.dog is built using the following awesome software:
+
+- gin-gonic/gin — MIT Licence — [GitHub](https://github.com/gin-gonic/gin), [Website](https://gin-gonic.com/)
+- go-redis/redis — BSD 2-Clause — [GitHub](https://github.com/go-redis/redis)
+- ekyoung/gin-nice-recovery — MIT Licence — [GitHub](https://github.com/ekyoung/gin-nice-recovery)
+- stretchr/testify — MIT Licence — [GitHub](https://github.com/stretchr/testify)
+- tobiasahlin/SpinKit — MIT Licence — [GitHub](https://github.com/tobiasahlin/SpinKit), [Website](https://tobiasahlin.com/spinkit/) 
 
 ## License
 
